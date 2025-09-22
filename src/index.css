@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'Avenir';
+    src: url('./assets/fonts/Avenir.ttc') format('truetype-collection');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Dunkin Sans';
+    src: url('./assets/fonts/Dunkin Sans.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}

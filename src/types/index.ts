@@ -1,0 +1,70 @@
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  currency: 'USD' | 'EUR' | 'COP';
+  images: {
+    main: string;
+    hover?: string;
+    gallery: string[];
+    miniBanner?: string;
+  };
+  variants: Variant[];
+  category: string;
+  description: string;
+  benefits: string[];
+  usage: string[];
+  icons: ProductIcon[];
+  alsoInterestedIds: string[];
+  shorts?: string[];
+}
+
+export interface Variant {
+  sku: string;
+  name: string;
+  size?: string;
+  price?: number;
+}
+
+export interface ProductIcon {
+  icon: string;
+  description: string;
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  city: string;
+  address: string;
+  phone: string;
+  hours: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  images: {
+    desktop: string;
+    mobile: string;
+    square?: string;
+  };
+  title: string;
+  subtitle?: string;
+  link: string;
+}
+
+export interface CartItem {
+  id: string;
+  sku: string;
+  quantity: number;
+  price: number;
+}
+
+export interface CheckoutData {
+  name: string;
+  email: string;
+  phone: string;
+  document: string;
+  address: string;
+  city: string;
+  notes?: string;
+}
