@@ -12,12 +12,38 @@ import { AlsoInterested } from '../components/AlsoInterested';
 import { MiniBanner } from '../components/MiniBanner';
 import { ShortsCarousel } from '../components/ShortsCarousel';
 
+type CartItem = {
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+    image: string;
+    image_url: string;
+    quantity: number;
+    sku?: string;
+};
+
+const getCart = (): CartItem[] => {
+    try {
+        const raw = localStorage.getItem('cart');
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
+const setCart = (items: CartItem[]) => {
+    localStorage.setItem('cart', JSON.stringify(items));
+    window.dispatchEvent(new Event('storage'));
+};
+
 export const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [product, setProduct] = useState<Product | null>(null);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [selectedVariant, setSelectedVariant] = useState('');
     const [quantity, setQuantity] = useState(1);
+    const [added, setAdded] = useState(false);
 
     useEffect(() => {
         const foundProduct = products.find(p => p.id === id);
@@ -47,6 +73,37 @@ export const ProductDetail: React.FC = () => {
             qty: quantity.toString()
         });
         window.location.href = `/checkout?${searchParams.toString()}`;
+    };
+
+    const handleAddToCart = () => {
+        try {
+            const cart = getCart();
+            const price = product.variants.find(v => v.sku === selectedVariant)?.price ?? product.price;
+            const key = (item: CartItem) => `${item.id}__${item.sku || ''}`;
+            const incoming: CartItem = {
+                id: product.id,
+                name: product.name,
+                price,
+                currency: product.currency,
+                image: product.images.main,
+                image_url: product.images.url_img,
+                quantity,
+                sku: selectedVariant || undefined
+            };
+
+            const idx = cart.findIndex(i => key(i) === key(incoming));
+            if (idx >= 0) {
+                cart[idx].quantity += quantity;
+            } else {
+                cart.push(incoming);
+            }
+
+            setCart(cart);
+            setAdded(true);
+            setTimeout(() => setAdded(false), 1500);
+        } catch (e) {
+            console.error('No se pudo añadir al carrito', e);
+        }
     };
 
     const selectedVariantData = product.variants.find(v => v.sku === selectedVariant);
@@ -115,27 +172,26 @@ export const ProductDetail: React.FC = () => {
 
                         <div className="space-y-6">
                             {/*<VariantSelect
-                                variants={product.variants}
-                                selectedSku={selectedVariant}
-                                onVariantChange={setSelectedVariant}
-                                label="Select variant"
-                            />*/}
+                variants={product.variants}
+                selectedSku={selectedVariant}
+                onVariantChange={setSelectedVariant}
+                label="Select variant"
+              />*/}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Quantity:
                                 </label>
 
-                                {/* ⬇️ Wrapper que “estrecha” el Quantity solo en desktop */}
                                 <div
                                     className="
-                                                w-fit inline-block
-                                                md:[&_input]:w-[3ch]
-                                                md:[&_input]:text-sm
-                                                md:[&_button]:px-1 md:[&_button]:py-1
-                                                md:[&_svg]:w-10 md:[&_svg]:h-3
-                                                md:[&_div]:rounded-md
-                                              "
+                    w-fit inline-block
+                    md:[&_input]:w-[3ch]
+                    md:[&_input]:text-sm
+                    md:[&_button]:px-1 md:[&_button]:py-1
+                    md:[&_svg]:w-10 md:[&_svg]:h-3
+                    md:[&_div]:rounded-md
+                  "
                                 >
                                     <QuantitySelector
                                         quantity={quantity}
@@ -145,12 +201,25 @@ export const ProductDetail: React.FC = () => {
                                 {/* ↑ En móvil no cambia; desde md: MUY angosto */}
                             </div>
 
+                            {/* Comprar ahora */}
                             <button
                                 onClick={handleBuyNow}
                                 className="w-full bg-[#9acd65] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#9acd65] transition-colors flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-[#9acd65] focus:ring-offset-2"
                             >
+                                <span>Comprar ahora</span>
+                            </button>
+
+                            {/* ➕ Añadir al carrito (debajo del botón Comprar) */}
+                            <button
+                                onClick={handleAddToCart}
+                                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2
+                                    ${added
+                                    ? 'bg-green-600 text-white focus:ring-green-600'
+                                    : 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 focus:ring-gray-300'}`}
+                                aria-label="Añadir al carrito"
+                            >
                                 <ShoppingCart className="w-5 h-5" />
-                                <span>Comprar</span>
+                                <span>{added ? 'Agregado' : 'Agregar al carrito'}</span>
                             </button>
                         </div>
 
@@ -184,9 +253,7 @@ export const ProductDetail: React.FC = () => {
                                 </ul>
                             </div>
 
-                            <MiniBanner
-                                imageUrl={product.images.miniBanner || ""}
-                            />
+                            <MiniBanner imageUrl={product.images.miniBanner || ''} />
                         </div>
                     </div>
                 </div>

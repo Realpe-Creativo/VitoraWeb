@@ -8,6 +8,7 @@ export interface Product {
     hover?: string;
     gallery: string[];
     miniBanner?: string;
+    url_img: string;
   };
   variants: Variant[];
   category: string;
@@ -61,10 +62,14 @@ export interface CartItem {
 
 export interface CheckoutData {
   name: string;
+  lastname: string;
   email: string;
   phone: string;
   document: string;
+  typeDocument: string;
   address: string;
   city: string;
+  department: string;
+  departmentId: string;
   notes?: string;
 }

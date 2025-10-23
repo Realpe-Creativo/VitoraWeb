@@ -50,6 +50,7 @@ export const products: Product[] = [
                 '/img/products/citrato_magnesio.jpg'*/
             ],
             miniBanner: "/img/logos/img.png",
+            url_img: "https://res.cloudinary.com/dkqjmeqaa/image/upload/v1761251385/citrato_magnesio_o8tomv.jpg"
         },
         variants: [
             {sku: 'WH-001-BK', name: 'Black', size: 'Standard'},
@@ -99,6 +100,7 @@ export const products: Product[] = [
                 '/img/products/ashwagandha.jpg'
             ],
             miniBanner: "/img/logos/img.png",
+            url_img:"https://res.cloudinary.com/dkqjmeqaa/image/upload/v1761251385/ashwagandha_h8x9ea.jpg"
         },
         variants: [
             {sku: 'SW-002-S', name: 'Small', size: '38mm'},
@@ -139,7 +141,8 @@ export const products: Product[] = [
             gallery: [
                 '/img/products/colageno.jpg',
                 '/img/products/colageno.jpg'
-            ]
+            ],
+            url_img:"https://res.cloudinary.com/dkqjmeqaa/image/upload/v1761251385/colageno_ftk6ck.jpg"
         },
         variants: [
             {sku: 'CAM-003-B', name: 'Body Only'},
@@ -182,6 +185,7 @@ export const products: Product[] = [
                 '/img/products/creatina_monohidratada.jpg'
             ],
             miniBanner: "/img/logos/img.png",
+            url_img:"https://res.cloudinary.com/dkqjmeqaa/image/upload/v1761251385/creatina_monohidratada_ftmogo.jpg"
         },
         variants: [
             {sku: 'CH-004-BK', name: 'Black'},

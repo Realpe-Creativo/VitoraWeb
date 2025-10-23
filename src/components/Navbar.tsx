@@ -1,10 +1,42 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {Link} from 'react-router-dom';
-import {Search, X, Instagram, MessageCircle} from 'lucide-react';
+import {Search, X, Instagram, MessageCircle, ShoppingCart, Trash2} from 'lucide-react';
 import {products} from '../data/products';
 import {Product} from '../types';
 
+type CartItem = {
+    id: string;
+    name: string;
+    price: number;       // precio unitario
+    quantity: number;
+    image?: string;
+    sku?: string;
+    currency?: string;   // 'COP' por defecto
+};
+
+const CURRENCY = 'COP';
+
+const formatMoney = (value: number, currency = CURRENCY) =>
+    new Intl.NumberFormat('es-CO', {style: 'currency', currency}).format(value);
+
+const getCartFromLS = (): CartItem[] => {
+    try {
+        const raw = localStorage.getItem('cart');
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
+
+const setCartToLS = (items: CartItem[]) => {
+    localStorage.setItem('cart', JSON.stringify(items));
+    // Para forzar actualización en otras pestañas / componentes si lo usas
+    window.dispatchEvent(new Event('storage'));
+};
+
 export const Navbar: React.FC = () => {
+    // ====== SEARCH ======
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -31,15 +63,15 @@ export const Navbar: React.FC = () => {
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isSearchOpen) {
-                closeSearch();
-            }
+            if (e.key === 'Escape' && isSearchOpen) closeSearch();
+            if (e.key === 'Escape' && isCartOpen) closeCart();
         };
 
         const handleClickOutside = (e: MouseEvent) => {
-            if (searchModalRef.current && !searchModalRef.current.contains(e.target as Node)) {
+            if (isSearchOpen && searchModalRef.current && !searchModalRef.current.contains(e.target as Node)) {
                 closeSearch();
             }
+            // Cart se cierra con su propio backdrop; no necesitamos aquí
         };
 
         if (isSearchOpen) {
@@ -55,18 +87,59 @@ export const Navbar: React.FC = () => {
         };
     }, [isSearchOpen]);
 
-    const openSearch = () => {
-        setIsSearchOpen(true);
-    };
-
+    const openSearch = () => setIsSearchOpen(true);
     const closeSearch = () => {
         setIsSearchOpen(false);
         setSearchQuery('');
         setSearchResults([]);
     };
+    const handleProductClick = () => closeSearch();
 
-    const handleProductClick = () => {
-        closeSearch();
+    // ====== CART ======
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [cart, setCart] = useState<CartItem[]>([]);
+
+    const cartCount = cart.reduce((acc, it) => acc + (it.quantity || 0), 0);
+    const cartSubtotal = cart.reduce((acc, it) => acc + (it.price || 0) * (it.quantity || 0), 0);
+
+    // Cargar cart desde LS
+    useEffect(() => {
+        const items = getCartFromLS();
+        setCart(Array.isArray(items) ? items : []);
+        const onStorage = () => setCart(getCartFromLS());
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, []);
+
+    const openCart = () => {
+        setIsCartOpen(true);
+        document.body.style.overflow = 'hidden';
+    };
+    const closeCart = () => {
+        setIsCartOpen(false);
+        document.body.style.overflow = 'unset';
+    };
+
+    const incQty = (id: string) => {
+        const next = cart.map(it => it.id === id ? {...it, quantity: (it.quantity || 0) + 1} : it);
+        setCart(next);
+        setCartToLS(next);
+    };
+    const decQty = (id: string) => {
+        const next = cart
+            .map(it => it.id === id ? {...it, quantity: Math.max(1, (it.quantity || 0) - 1)} : it)
+            .filter(it => it.quantity > 0);
+        setCart(next);
+        setCartToLS(next);
+    };
+    const removeItem = (id: string) => {
+        const next = cart.filter(it => it.id !== id);
+        setCart(next);
+        setCartToLS(next);
+    };
+    const clearCart = () => {
+        setCart([]);
+        setCartToLS([]);
     };
 
     return (
@@ -74,14 +147,30 @@ export const Navbar: React.FC = () => {
             <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        {/* Left - Search */}
-                        <div className="flex items-center">
+                        {/* Left - Search + Cart */}
+                        <div className="flex items-center space-x-1">
+                            {/* Search */}
                             <button
                                 onClick={openSearch}
                                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                aria-label="Search products"
+                                aria-label="Buscar productos"
                             >
                                 <Search className="w-5 h-5"/>
+                            </button>
+
+                            {/* Cart */}
+                            <button
+                                onClick={openCart}
+                                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                aria-label="Abrir carrito"
+                            >
+                                <ShoppingCart className="w-5 h-5"/>
+                                {cartCount > 0 && (
+                                    <span
+                                        className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] leading-[18px] text-white bg-[#9acd65] rounded-full text-center">
+                    {cartCount}
+                  </span>
+                                )}
                             </button>
                         </div>
 
@@ -89,7 +178,7 @@ export const Navbar: React.FC = () => {
                         <div className="flex-1 flex justify-center">
                             <Link
                                 to="/"
-                                className="flex items-center space-x-2 text-xl font-bold text-gray-900  transition-colors"
+                                className="flex items-center space-x-2 text-xl font-bold text-gray-900 transition-colors"
                                 aria-label="Ir al inicio"
                             >
                                 <img
@@ -110,7 +199,7 @@ export const Navbar: React.FC = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 text-gray-600 hover:text-pink-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
-                                aria-label="Follow us on Instagram"
+                                aria-label="Instagram"
                             >
                                 <Instagram className="w-5 h-5"/>
                             </a>
@@ -119,7 +208,7 @@ export const Navbar: React.FC = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 text-gray-600 hover:text-green-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                aria-label="Contact us on WhatsApp"
+                                aria-label="WhatsApp"
                             >
                                 <MessageCircle className="w-5 h-5"/>
                             </a>
@@ -128,7 +217,7 @@ export const Navbar: React.FC = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                aria-label="Follow us on TikTok"
+                                aria-label="TikTok"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                                     <path
@@ -145,7 +234,6 @@ export const Navbar: React.FC = () => {
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex min-h-full items-start justify-center p-4 text-center sm:p-0">
                         <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"/>
-
                         <div
                             ref={searchModalRef}
                             className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl"
@@ -158,15 +246,14 @@ export const Navbar: React.FC = () => {
                                     <button
                                         onClick={closeSearch}
                                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        aria-label="Close search"
+                                        aria-label="Cerrar buscador"
                                     >
                                         <X className="w-5 h-5"/>
                                     </button>
                                 </div>
 
                                 <div className="relative mb-4">
-                                    <Search
-                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"/>
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"/>
                                     <input
                                         ref={searchInputRef}
                                         type="text"
@@ -199,11 +286,9 @@ export const Navbar: React.FC = () => {
                                                         loading="lazy"
                                                     />
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-medium text-gray-900 truncate">
-                                                            {product.name}
-                                                        </h4>
+                                                        <h4 className="text-sm font-medium text-gray-900 truncate">{product.name}</h4>
                                                         <p className="text-sm text-gray-500 truncate">
-                                                            {product.category} • ${product.price}
+                                                            {product.category} • {formatMoney(product.price)}
                                                         </p>
                                                     </div>
                                                 </Link>
@@ -214,6 +299,113 @@ export const Navbar: React.FC = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Cart Drawer */}
+            {isCartOpen && (
+                <div className="fixed inset-0 z-50">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black bg-opacity-50" onClick={closeCart}/>
+
+                    {/* Panel */}
+                    <aside
+                        className="absolute right-0 top-0 h-full w-full sm:w-[420px] bg-white shadow-xl flex flex-col"
+                        role="dialog"
+                        aria-label="Carrito de compras"
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b">
+                            <h3 className="text-lg font-semibold text-gray-900">Tu carrito</h3>
+                            <button
+                                onClick={closeCart}
+                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                aria-label="Cerrar carrito"
+                            >
+                                <X className="w-5 h-5"/>
+                            </button>
+                        </div>
+
+                        {/* Items */}
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {cart.length === 0 ? (
+                                <p className="text-gray-500 text-center py-10">Tu carrito está vacío</p>
+                            ) : (
+                                <ul className="space-y-3">
+                                    {cart.map((item) => (
+                                        <li key={`${item.id}-${item.sku || ''}`}
+                                            className="flex items-center gap-3 p-3 border rounded-lg">
+                                            <img
+                                                src={item.image || '/img/placeholder.png'}
+                                                alt={item.name}
+                                                className="w-14 h-14 rounded-md object-cover"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 truncate">{item.name}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.sku ? `SKU: ${item.sku} • ` : ''}{formatMoney(item.price)}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <button
+                                                        onClick={() => decQty(item.id)}
+                                                        className="w-7 h-7 rounded border text-gray-700 hover:bg-gray-100"
+                                                        aria-label="Disminuir cantidad"
+                                                    >−
+                                                    </button>
+                                                    <span className="w-6 text-center">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => incQty(item.id)}
+                                                        className="w-7 h-7 rounded border text-gray-700 hover:bg-gray-100"
+                                                        aria-label="Aumentar cantidad"
+                                                    >+
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <button
+                                                    onClick={() => removeItem(item.id)}
+                                                    className="p-1 text-gray-400 hover:text-red-600"
+                                                    aria-label="Quitar del carrito"
+                                                >
+                                                    <Trash2 className="w-4 h-4"/>
+                                                </button>
+                                                <p className="mt-4 font-semibold text-gray-900">
+                                                    {formatMoney((item.price || 0) * (item.quantity || 0))}
+                                                </p>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="border-t p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-gray-600">Subtotal</span>
+                                <span className="text-lg font-semibold">{formatMoney(cartSubtotal)}</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={clearCart}
+                                    disabled={cart.length === 0}
+                                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    Vaciar
+                                </button>
+                                <Link
+                                    to="/checkout"
+                                    onClick={closeCart}
+                                    className="flex-1 text-center bg-[#9acd65] text-white px-4 py-2 rounded-lg hover:bg-[#8bc34a]"
+                                >
+                                    Pagar
+                                </Link>
+                            </div>
+                            <p className="mt-2 text-xs text-gray-500">
+                                En el checkout podrás calcular envío e impuestos (si aplican).
+                            </p>
+                        </div>
+                    </aside>
                 </div>
             )}
         </>
