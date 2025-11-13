@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { HeroSlide } from '../types';
-import { useViewportAspectRatio } from '../hooks/useViewportAspectRatio';
+import React, {useState, useEffect, useCallback} from 'react';
+import {ChevronLeft, ChevronRight} from 'lucide-react';
+import {HeroSlide} from '../types';
+import {useViewportAspectRatio} from '../hooks/useViewportAspectRatio';
 
 interface HeroSliderProps {
     slides: HeroSlide[];
 }
 
-export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
+export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const aspectRatio = useViewportAspectRatio();
@@ -43,17 +43,14 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
     };
 
     const handleSlideClick = (link: string) => {
-        // Verificar si el link es un ancla (empieza con #)
         if (link.startsWith('#')) {
             const element = document.querySelector(link);
             if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
+                element.scrollIntoView({behavior: 'smooth'});
             }
         } else {
-            // Verificar si es una URL completa
-            const isExternalLink = /^https?:\/\//.test(link); // Si el link empieza con http:// o https://
+            const isExternalLink = /^https?:\/\//.test(link);
             if (isExternalLink || link.startsWith('/')) {
-                // Si es una URL absoluta o relativa, redirige.
                 window.location.href = link;
             }
         }
@@ -61,45 +58,63 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
 
     return (
         <div
-            className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden"
+            className="relative w-full h-auto md:h-[70vh] overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             role="region"
             aria-label="Hero image carousel"
         >
-            {slides.map((slide, index) => (
-                <div
-                    key={slide.id}
-                    className={`absolute inset-0 transition-opacity duration-500 cursor-pointer ${
-                        index === currentSlide ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    onClick={() => handleSlideClick(slide.link)} // Enlace click
-                    role="button"
-                    tabIndex={index === currentSlide ? 0 : -1}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleSlideClick(slide.link); // Manejo de click con teclado
-                        }
-                    }}
-                    aria-label={`${slide.title}${slide.subtitle ? ` - ${slide.subtitle}` : ''}`}
-                >
-                    <img
-                        src={getImageSrc(slide)}
-                        alt={slide.title}
-                        className="w-full h-full object-cover"
-                        loading={index === 0 ? 'eager' : 'lazy'}
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                        <div className="text-center text-white px-4">
-                            <h2 className="text-3xl md:text-5xl font-bold mb-4">{slide.title}</h2>
-                            {slide.subtitle && (
-                                <p className="text-lg md:text-xl opacity-90">{slide.subtitle}</p>
-                            )}
+            {slides.map((slide, index) => {
+                const isActive = index === currentSlide;
+
+                return (
+                    <div
+                        key={slide.id}
+                        className={`
+              ${isActive ? 'block' : 'hidden'}          /* móvil: solo se pinta el activo */
+              md:block                                  /* desktop: todos existen */
+              md:absolute md:inset-0                    /* desktop: modo carrusel superpuesto */
+              md:transition-opacity md:duration-500
+              md:cursor-pointer
+              ${isActive ? 'md:opacity-100' : 'md:opacity-0'}
+            `}
+                        onClick={() => handleSlideClick(slide.link)}
+                        role="button"
+                        tabIndex={isActive ? 0 : -1}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleSlideClick(slide.link);
+                            }
+                        }}
+                        aria-label={`${slide.title}${slide.subtitle ? ` - ${slide.subtitle}` : ''}`}
+                    >
+                        <img
+                            src={getImageSrc(slide)}
+                            alt={slide.title}
+                            className="
+                w-full
+                h-auto md:h-full           /* móvil: alto según imagen, desktop: llena el contenedor */
+                object-contain md:object-cover
+              "
+                            loading={index === 0 ? 'eager' : 'lazy'}
+                        />
+
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center text-white px-4">
+                                <h2 className="text-3xl md:text-5xl font-bold mb-4">
+                                    {slide.title}
+                                </h2>
+                                {slide.subtitle && (
+                                    <p className="text-lg md:text-xl opacity-90">
+                                        {slide.subtitle}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
 
             {slides.length > 1 && (
                 <>
@@ -108,7 +123,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
                         aria-label="Previous slide"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <ChevronLeft className="w-6 h-6"/>
                     </button>
 
                     <button
@@ -116,7 +131,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
                         aria-label="Next slide"
                     >
-                        <ChevronRight className="w-6 h-6" />
+                        <ChevronRight className="w-6 h-6"/>
                     </button>
 
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
@@ -124,9 +139,11 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                             <button
                                 key={index}
                                 onClick={() => goToSlide(index)}
-                                className={`w-3 h-3 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black ${
-                                    index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
-                                }`}
+                                className={`
+                  w-3 h-3 rounded-full transition-all duration-200 focus:outline-none
+                  focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+                  ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'}
+                `}
                                 aria-label={`Go to slide ${index + 1}`}
                             />
                         ))}

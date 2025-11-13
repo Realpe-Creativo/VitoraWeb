@@ -62,7 +62,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
     return (
         <div
-            className="group block bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="group block text-center bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -79,7 +79,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
             <div className="p-4">
                 <Link to={`/product/${product.id}`}>
-                    <h3 className="font-dunkin text-gray-900 mb-2 line-clamp-2 group-hover:text-[#9acd65] transition-colors">
+                    <h3 className="font-avenir font-bold text-2xl text-gray-900 mb-2 line-clamp-2 group-hover:text-[#9acd65] transition-colors">
                         {product.name}
                     </h3>
                 </Link>
@@ -87,18 +87,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <Price
                     amount={product.price}
                     currency={product.currency}
-                    className="text-lg font-bold text-[#9acd65]"
+                    className="text-3xl font-bold text-[#9acd65]"
                 />
 
                 <button
                     onClick={handleAddToCart}
-                    className={`w-full mt-3 py-2 px-4 rounded-full font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    className={`w-full mt-3 py-4 px-4 text-2xl rounded-full font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                         added
                             ? 'bg-green-600 text-white focus:ring-green-600'
                             : 'bg-[#9acd65] text-white hover:bg-[#014126] hover:scale-105 focus:ring-[#014126]'
                     }`}
                 >
-                    {added ? 'Agregado' : 'Agregar al carrito'}
+                    {added ? 'AGREGADO' : 'AGREGAR'}
                 </button>
             </div>
         </div>

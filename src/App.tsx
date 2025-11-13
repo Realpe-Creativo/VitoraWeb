@@ -9,6 +9,8 @@ import Login from "./pages/Login.tsx";
 import Admin from "./pages/Admin.tsx";
 import Pedidos from "./pages/Pedidos.tsx";
 import Transacciones from "./pages/Transacciones.tsx";
+import BlogList from "./pages/BlogList.tsx";
+import BlogDetail from "./pages/BlogDetails.tsx";
 
 function Layout() {
     const location = useLocation();
@@ -29,6 +31,8 @@ function Layout() {
                     <Route path="/admin/home" element={<Admin/>}/>
                     <Route path="/admin/pedidos" element={<Pedidos/>}/>
                     <Route path="/admin/trasactions" element={<Transacciones/>}/>
+                    <Route path="/news" element={<BlogList />} />
+                    <Route path="/news/newsDetail/:id" element={<BlogDetail />} />
                 </Routes>
             </main>
             {!hideNavbar && <Footer/>}

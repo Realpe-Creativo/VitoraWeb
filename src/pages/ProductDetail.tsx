@@ -11,6 +11,7 @@ import { IconBenefitsRow } from '../components/IconBenefitsRow';
 import { AlsoInterested } from '../components/AlsoInterested';
 import { MiniBanner } from '../components/MiniBanner';
 import { ShortsCarousel } from '../components/ShortsCarousel';
+import { HtmlContent, AccordionSection } from '../components/AccordionSection';
 
 type CartItem = {
     id: string;
@@ -172,26 +173,26 @@ export const ProductDetail: React.FC = () => {
 
                         <div className="space-y-6">
                             {/*<VariantSelect
-                variants={product.variants}
-                selectedSku={selectedVariant}
-                onVariantChange={setSelectedVariant}
-                label="Select variant"
-              />*/}
+                            variants={product.variants}
+                            selectedSku={selectedVariant}
+                            onVariantChange={setSelectedVariant}
+                            label="Select variant"
+                          />*/}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Quantity:
+                                    Cantidad:
                                 </label>
 
                                 <div
                                     className="
-                    w-fit inline-block
-                    md:[&_input]:w-[3ch]
-                    md:[&_input]:text-sm
-                    md:[&_button]:px-1 md:[&_button]:py-1
-                    md:[&_svg]:w-10 md:[&_svg]:h-3
-                    md:[&_div]:rounded-md
-                  "
+                                    w-fit inline-block
+                                    md:[&_input]:w-[3ch]
+                                    md:[&_input]:text-sm
+                                    md:[&_button]:px-1 md:[&_button]:py-1
+                                    md:[&_svg]:w-10 md:[&_svg]:h-3
+                                    md:[&_div]:rounded-md
+                                  "
                                 >
                                     <QuantitySelector
                                         quantity={quantity}
@@ -224,33 +225,80 @@ export const ProductDetail: React.FC = () => {
                         </div>
 
                         <div className="mt-8 space-y-6">
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-                                <p className="text-gray-600 leading-relaxed">{product.description}</p>
-                            </div>
+                            <div className="space-y-4">
+                                {/* Características / Descripción */}
+                                <AccordionSection title="Características" defaultOpen>
+                                    <HtmlContent
+                                        html={product.description}
+                                        className="text-gray-600 leading-relaxed text-sm md:text-base"
+                                    />
+                                </AccordionSection>
 
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Benefits</h3>
-                                <ul className="space-y-2">
-                                    {product.benefits.map((benefit, index) => (
-                                        <li key={index} className="flex items-start">
-                                            <span className="text-green-500 mr-2 mt-1">✓</span>
-                                            <span className="text-gray-600">{benefit}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                {/* Beneficios */}
+                                {/* Beneficios */}
+                                {product.benefitsGroups && product.benefitsGroups.length > 0 ? (
+                                    // Modo: acordeón dentro de acordeón
+                                    <AccordionSection title="Beneficios">
+                                        <div className="space-y-2">
+                                            {product.benefitsGroups.map((group, index) => (
+                                                <AccordionSection
+                                                    key={index}
+                                                    title={group.title}
+                                                    defaultOpen={index === 0}
+                                                >
+                                                    <ul className="space-y-2">
+                                                        {group.items.map((item, i) => (
+                                                            <li key={i} className="flex items-start">
+                                                                <span className="text-green-500 mr-2 mt-1">✓</span>
+                                                                <HtmlContent
+                                                                    html={item}
+                                                                    className="text-gray-600 text-sm md:text-base"
+                                                                />
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </AccordionSection>
+                                            ))}
+                                        </div>
+                                    </AccordionSection>
+                                ) : (
+                                    // Modo: lista simple (como estaba antes)
+                                    product.benefits && product.benefits.length > 0 && (
+                                        <AccordionSection title="Beneficios">
+                                            <ul className="space-y-2">
+                                                {product.benefits.map((benefit, index) => (
+                                                    <li key={index} className="flex items-start">
+                                                        <span className="text-green-500 mr-2 mt-1">✓</span>
+                                                        <HtmlContent
+                                                            html={benefit}
+                                                            className="text-gray-600 text-sm md:text-base"
+                                                        />
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </AccordionSection>
+                                    )
+                                )}
 
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-3">Recommended Uses</h3>
-                                <ul className="space-y-2">
-                                    {product.usage.map((use, index) => (
-                                        <li key={index} className="flex items-start">
-                                            <span className="text-blue-500 mr-2 mt-1">•</span>
-                                            <span className="text-gray-600">{use}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                {/* Preguntas frecuentes: acordeón dentro de acordeón */}
+                                {product.faqs && product.faqs.length > 0 && (
+                                    <AccordionSection title="Preguntas frecuentes">
+                                        <div className="space-y-2">
+                                            {product.faqs.map((faq, index) => (
+                                                <AccordionSection
+                                                    key={index}
+                                                    title={faq.question}
+                                                    defaultOpen={index === 0}
+                                                >
+                                                    <HtmlContent
+                                                        html={faq.answer}
+                                                        className="text-gray-600 text-sm md:text-base"
+                                                    />
+                                                </AccordionSection>
+                                            ))}
+                                        </div>
+                                    </AccordionSection>
+                                )}
                             </div>
 
                             <MiniBanner imageUrl={product.images.miniBanner || ''} />
@@ -260,6 +308,25 @@ export const ProductDetail: React.FC = () => {
 
                 {/* Product Features */}
                 <IconBenefitsRow icons={product.icons} />
+
+                {product.extraSections && product.extraSections.length > 0 && (
+                    <div className="mt-10 border-t border-gray-200 pt-8">
+                        <div className="max-w-3xl mx-auto space-y-4">
+                            {product.extraSections.map((section, index) => (
+                                <AccordionSection
+                                    key={index}
+                                    title={section.title}
+                                    defaultOpen={index === 0}
+                                >
+                                    <HtmlContent
+                                        html={section.content}
+                                        className="text-gray-700 text-sm md:text-base leading-relaxed"
+                                    />
+                                </AccordionSection>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Video Reviews */}
                 {product.shorts && product.shorts.length > 0 && (

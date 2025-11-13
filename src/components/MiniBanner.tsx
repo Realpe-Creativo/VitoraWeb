@@ -12,11 +12,11 @@ export const MiniBanner: React.FC<MiniBannerProps> = ({
                                                           className = ''
                                                       }) => {
     return (
-        <div className={`rounded-lg overflow-hidden ${className}`}>
+        <div className={`rounded-lg overflow-hidden flex justify-center items-center bg-black/5 ${className}`}>
             <img
                 src={imageUrl}
                 alt={alt}
-                className="w-full h-40 object-cover rounded-lg"
+                className="w-full h-auto object-contain rounded-lg"
                 loading="lazy"
             />
         </div>

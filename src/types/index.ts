@@ -13,11 +13,28 @@ export interface Product {
   variants: Variant[];
   category: string;
   description: string;
-  benefits: string[];
-  usage: string[];
+  benefits?: string[];
+  benefitsGroups?: ProductBenefitGroup[];
+  faqs?: ProductFaq[];
+  extraSections?: ProductExtraSection[];
   icons: ProductIcon[];
   alsoInterestedIds: string[];
   shorts?: string[];
+}
+
+export interface ProductExtraSection {
+    title: string;
+    content: string;
+}
+
+export interface ProductFaq {
+    question: string;
+    answer: string;
+}
+
+export interface ProductBenefitGroup {
+    title: string;
+    items: string[];
 }
 
 export interface Variant {
