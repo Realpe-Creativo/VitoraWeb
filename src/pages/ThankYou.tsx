@@ -108,11 +108,20 @@ export const ThankYou: React.FC = () => {
                             >
                                 {esAprobado ? "¡Pago aprobado!" : "Pago no completado"}
                             </h2>
-                            <p className="text-gray-600">
-                                {esAprobado
-                                    ? "Tu compra fue procesada exitosamente."
-                                    : "Hubo un problema al procesar el pago. Puedes intentar nuevamente o contactar soporte."}
-                            </p>
+                            {esAprobado ? (
+                                <>
+                                    <p className="text-gray-600">
+                                        Tu compra fue procesada exitosamente.
+                                    </p>
+                                    <p className="text-gray-600">
+                                        Nuestro equipo se contactará contigo en el menor tiempo posible para darte los detalles del envío de tu pedido.
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="text-gray-600">
+                                    Hubo un problema al procesar el pago. Puedes intentar nuevamente o contactar soporte.
+                                </p>
+                            )}
                         </div>
                     )}
 

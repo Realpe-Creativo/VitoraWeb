@@ -148,30 +148,41 @@ export const Navbar: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Left - Search + Cart */}
-                        <div className="flex items-center space-x-1">
-                            {/* Search */}
-                            <button
-                                onClick={openSearch}
-                                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                aria-label="Buscar productos"
-                            >
-                                <Search className="w-5 h-5"/>
-                            </button>
+                        <div className="flex items-center space-x-1 w-20 md:w-auto">
+                            <div className="hidden md:flex items-center space-x-1">
 
-                            {/* Cart */}
-                            <button
-                                onClick={openCart}
-                                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                aria-label="Abrir carrito"
-                            >
-                                <ShoppingCart className="w-5 h-5"/>
-                                {cartCount > 0 && (
-                                    <span
-                                        className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] leading-[18px] text-white bg-[#9acd65] rounded-full text-center">
-                    {cartCount}
-                  </span>
-                                )}
-                            </button>
+                                <a
+                                    href="https://instagram.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 text-gray-600 hover:text-pink-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    aria-label="Instagram"
+                                >
+                                    <Instagram className="w-7 h-7" />
+                                </a>
+
+                                <a
+                                    href="https://wa.me/573158873641?text=Hola%20Vitora%20Colombia%2C%20estoy%20interesado%20en%20sus%20productos"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 text-gray-600 hover:text-green-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    aria-label="WhatsApp"
+                                >
+                                    <MessageCircle className="w-7 h-7" />
+                                </a>
+
+                                <a
+                                    href="https://tiktok.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                    aria-label="TikTok"
+                                >
+                                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-.88-.05A6.33 6.33 0 0 0 5.16 20.5a6.33 6.33 0 0 0 10.86-4.43V7.83a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.26z"/>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
 
                         {/* Center - Logo */}
@@ -184,7 +195,7 @@ export const Navbar: React.FC = () => {
                                 <img
                                     src="/img/logos/logo_verde.png"
                                     alt="Vitora"
-                                    className="h-8 w-auto object-contain"
+                                    className="h-9 w-auto object-contain"
                                     loading="eager"
                                     fetchPriority="high"
                                 />
@@ -194,36 +205,29 @@ export const Navbar: React.FC = () => {
 
                         {/* Right - Social Media */}
                         <div className="flex items-center space-x-2">
-                            <a
-                                href="https://instagram.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 text-gray-600 hover:text-pink-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
-                                aria-label="Instagram"
+                            {/* Search */}
+                            <button
+                                onClick={openSearch}
+                                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                aria-label="Buscar productos"
                             >
-                                <Instagram className="w-5 h-5"/>
-                            </a>
-                            <a
-                                href="https://wa.me/1234567890"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 text-gray-600 hover:text-green-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                aria-label="WhatsApp"
+                                <Search className="w-7 h-7"/>
+                            </button>
+
+                            {/* Cart */}
+                            <button
+                                onClick={openCart}
+                                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                aria-label="Abrir carrito"
                             >
-                                <MessageCircle className="w-5 h-5"/>
-                            </a>
-                            <a
-                                href="https://tiktok.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                aria-label="TikTok"
-                            >
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                    <path
-                                        d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-.88-.05A6.33 6.33 0 0 0 5.16 20.5a6.33 6.33 0 0 0 10.86-4.43V7.83a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.26z"/>
-                                </svg>
-                            </a>
+                                <ShoppingCart className="w-7 h-7"/>
+                                {cartCount > 0 && (
+                                    <span
+                                        className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] leading-[18px] text-white bg-[#9acd65] rounded-full text-center">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>

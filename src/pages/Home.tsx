@@ -18,7 +18,7 @@ export const Home: React.FC = () => {
             <HeroSlider slides={heroSlides}/>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Products Section */}
                 <section className="py-16" id="products">
                     <h2 className="text-5xl font-avenir font-bold text-center mb-12">Nuestros productos</h2>

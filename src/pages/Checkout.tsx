@@ -248,6 +248,10 @@ export const Checkout: React.FC = () => {
                 throw new Error(msg);
             }
 
+            // 🧹 AQUÍ: vaciar carrito cuando la transacción se creó bien
+            localStorage.removeItem('cart');
+            setCartItems([]);
+
             if (data?.checkoutUrl) {
                 window.location.href = data.checkoutUrl;
                 return;

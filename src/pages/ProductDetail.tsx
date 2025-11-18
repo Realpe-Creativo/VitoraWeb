@@ -7,7 +7,7 @@ import { ImageZoom } from '../components/ImageZoom';
 import { Price } from '../components/Price';
 import { QuantitySelector } from '../components/QuantitySelector';
 //import { VariantSelect } from '../components/VariantSelect';
-import { IconBenefitsRow } from '../components/IconBenefitsRow';
+/*import { IconBenefitsRow } from '../components/IconBenefitsRow';*/
 import { AlsoInterested } from '../components/AlsoInterested';
 import { MiniBanner } from '../components/MiniBanner';
 import { ShortsCarousel } from '../components/ShortsCarousel';
@@ -306,7 +306,7 @@ export const ProductDetail: React.FC = () => {
                 </div>
 
                 {/* Product Features */}
-                <IconBenefitsRow icons={product.icons} />
+                {/*<IconBenefitsRow icons={product.icons} />*/}
 
                 {product.extraSections && product.extraSections.length > 0 && (
                     <div className="mt-10 border-t border-gray-200 pt-8">

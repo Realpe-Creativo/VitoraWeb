@@ -1,6 +1,7 @@
 export interface Product {
   id: string;
   name: string;
+  short_name: string;
   price: number;
   currency: 'USD' | 'EUR' | 'COP';
   images: {

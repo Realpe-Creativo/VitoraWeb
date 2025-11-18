@@ -10,7 +10,7 @@ interface HeroSliderProps {
 export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
-    const aspectRatio = useViewportAspectRatio();
+    const aspectRatio = useViewportAspectRatio(); // Si lo usas en otro lado, lo dejamos
 
     const nextSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -30,17 +30,6 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
             return () => clearInterval(interval);
         }
     }, [nextSlide, isPaused, slides.length]);
-
-    const getImageSrc = (slide: HeroSlide) => {
-        switch (aspectRatio) {
-            case 'square':
-                return slide.images.square || slide.images.mobile;
-            case 'mobile':
-                return slide.images.mobile;
-            default:
-                return slide.images.desktop;
-        }
-    };
 
     const handleSlideClick = (link: string) => {
         if (link.startsWith('#')) {
@@ -71,13 +60,13 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
                     <div
                         key={slide.id}
                         className={`
-              ${isActive ? 'block' : 'hidden'}          /* móvil: solo se pinta el activo */
-              md:block                                  /* desktop: todos existen */
-              md:absolute md:inset-0                    /* desktop: modo carrusel superpuesto */
-              md:transition-opacity md:duration-500
-              md:cursor-pointer
-              ${isActive ? 'md:opacity-100' : 'md:opacity-0'}
-            `}
+                            ${isActive ? 'block' : 'hidden'}      /* móvil: solo activo */
+                            md:block                              /* desktop: todos existen */
+                            md:absolute md:inset-0
+                            md:transition-opacity md:duration-500
+                            md:cursor-pointer
+                            ${isActive ? 'md:opacity-100' : 'md:opacity-0'}
+                        `}
                         onClick={() => handleSlideClick(slide.link)}
                         role="button"
                         tabIndex={isActive ? 0 : -1}
@@ -89,16 +78,31 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
                         }}
                         aria-label={`${slide.title}${slide.subtitle ? ` - ${slide.subtitle}` : ''}`}
                     >
-                        <img
-                            src={getImageSrc(slide)}
-                            alt={slide.title}
-                            className="
-                w-full
-                h-auto md:h-full           /* móvil: alto según imagen, desktop: llena el contenedor */
-                object-contain md:object-cover
-              "
-                            loading={index === 0 ? 'eager' : 'lazy'}
-                        />
+                        {/* AQUÍ EL CAMBIO IMPORTANTE */}
+                        <picture>
+                            {/* Móvil: siempre usa la imagen mobile */}
+                            <source
+                                media="(max-width: 767px)"
+                                srcSet={slide.images.mobile}
+                            />
+                            {/* Escritorio: siempre usa la imagen desktop */}
+                            <source
+                                media="(min-width: 768px)"
+                                srcSet={slide.images.desktop}
+                            />
+                            {/* Fallback (por si acaso) */}
+                            <img
+                                src={slide.images.desktop}
+                                alt={slide.title}
+                                className="
+                                    w-full
+                                    h-auto md:h-full
+                                    object-cover
+                                "
+                                loading={index === 0 ? 'eager' : 'lazy'}
+                                decoding="async"
+                            />
+                        </picture>
 
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="text-center text-white px-4">
@@ -140,10 +144,10 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
                                 key={index}
                                 onClick={() => goToSlide(index)}
                                 className={`
-                  w-3 h-3 rounded-full transition-all duration-200 focus:outline-none
-                  focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
-                  ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'}
-                `}
+                                    w-3 h-3 rounded-full transition-all duration-200 focus:outline-none
+                                    focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+                                    ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'}
+                                `}
                                 aria-label={`Go to slide ${index + 1}`}
                             />
                         ))}

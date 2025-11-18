@@ -39,6 +39,7 @@ export const products: Product[] = [
     {
         id: '1',
         name: 'Citrato de Magnesio Polvo x 250gr',
+        short_name: 'Citrato de Magnesio',
         price: 49000,
         currency: 'COP',
         images: {
@@ -152,7 +153,7 @@ export const products: Product[] = [
         shorts: [
             'https://www.youtube.com/shorts/6poO3oBeyEk',
             'https://www.youtube.com/shorts/-Xny9GYwUwg',
-            'https://www.youtube.com/shorts/Jjw1ryUf940?si=o4dWsUnURJ7UoRhT',
+            'https://youtube.com/shorts/jG_UTsVRx4g?si=Qw2yh2R9awAW1CpA',
             'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
             'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
             'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
@@ -161,6 +162,7 @@ export const products: Product[] = [
     {
         id: '2',
         name: 'Ashwagandha Polvo x 250gr',
+        short_name: 'Ashwagandha',
         price: 94500,
         currency: 'COP',
         images: {
@@ -309,6 +311,7 @@ export const products: Product[] = [
     {
         id: '3',
         name: 'Colágeno Hidrolizado Polvo x500gr',
+        short_name: 'Colágeno Hidrolizado',
         price: 79900,
         currency: 'COP',
         images: {
@@ -420,6 +423,7 @@ export const products: Product[] = [
     {
         id: '4',
         name: 'Creatina Monohidratada Polvo x250gr',
+        short_name: 'Creatina Monohidratada',
         price: 89900,
         currency: 'COP',
         images: {

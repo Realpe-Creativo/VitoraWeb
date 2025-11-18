@@ -61,19 +61,33 @@ const getTikTokEmbed = (url: string) => {
 export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [activeIndex, setActiveIndex] = useState<number | null>(null); // solo este renderiza iframe
-    const itemsPerView = 4;
-    const maxIndex = Math.max(shorts.length - itemsPerView, 0);
+    const [itemsPerView, setItemsPerView] = useState(1);
 
-    const nextSlide = () => setCurrentIndex((p) => (p >= maxIndex ? 0 : p + 1));
-    const prevSlide = () => setCurrentIndex((p) => (p <= 0 ? maxIndex : p - 1));
+    React.useEffect(() => {
+        const updateItemsPerView = () => {
+            if (window.innerWidth < 640) {
+                setItemsPerView(1); // móvil: 1 short
+            } else if (window.innerWidth < 1024) {
+                setItemsPerView(2); // tablet: 2 shorts
+            } else {
+                setItemsPerView(4); // desktop: 4 shorts
+            }
+        };
+
+        updateItemsPerView();
+        window.addEventListener('resize', updateItemsPerView);
+        return () => window.removeEventListener('resize', updateItemsPerView);
+    }, []);
+
+    const maxIndex = Math.max(shorts.length - itemsPerView, 0);
 
     const transform = `translateX(-${(currentIndex * 100) / itemsPerView}%)`;
 
     if (!shorts?.length) return null;
 
     return (
-        <div className="relative mx-auto max-w-7xl">
-            <h2 className="text-5xl text-center font-avenir font-bold mb-6">Nuestras recetas</h2>
+        <div className="relative mx-auto max-w-7xl px-2 sm:px-4">
+            <h2 className="text-5xl sm:text-5xl lg:text-5xl text-center font-avenir font-bold mb-4 sm:mb-6 px-4">Información de valor</h2>
 
             <div className="relative overflow-hidden rounded-lg bg-gray-100">
                 <div
@@ -99,7 +113,7 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                                 : null;
 
                         return (
-                            <div key={index} className="w-1/4 flex-shrink-0 px-2">
+                            <div key={index} className="w-full sm:w-1/2 lg:w-1/4 flex-shrink-0 px-2">
                                 <div className="relative aspect-[9/16] overflow-hidden rounded-lg bg-black/5">
                                     {isActive && embedSrc ? (
                                         // Renderizamos SOLO el iframe activo → los otros se desmontan y se detienen
@@ -112,7 +126,7 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                                             title={`Short ${index + 1}`}
                                         />
                                     ) : (
-                                        // Poster “silencioso”. Al click → activamos este y desmontamos el anterior
+                                        // Poster "silencioso". Al click → activamos este y desmontamos el anterior
                                         <button
                                             type="button"
                                             onClick={() => setActiveIndex(index)}
@@ -158,11 +172,12 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                     <>
                         <button
                             onClick={() => {
-                                prevSlide();
+                                const newIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
+                                setCurrentIndex(newIndex);
                                 // si el activo quedó fuera de la vista, lo desactivamos para que no siga sonando
                                 if (
                                     activeIndex !== null &&
-                                    (activeIndex < currentIndex || activeIndex >= currentIndex + itemsPerView)
+                                    (activeIndex < newIndex || activeIndex >= newIndex + itemsPerView)
                                 ) {
                                     setActiveIndex(null);
                                 }
@@ -175,10 +190,11 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
 
                         <button
                             onClick={() => {
-                                nextSlide();
+                                const newIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+                                setCurrentIndex(newIndex);
                                 if (
                                     activeIndex !== null &&
-                                    (activeIndex < currentIndex || activeIndex >= currentIndex + itemsPerView)
+                                    (activeIndex < newIndex || activeIndex >= newIndex + itemsPerView)
                                 ) {
                                     setActiveIndex(null);
                                 }

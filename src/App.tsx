@@ -11,15 +11,38 @@ import Pedidos from "./pages/Pedidos.tsx";
 import Transacciones from "./pages/Transacciones.tsx";
 import BlogList from "./pages/BlogList.tsx";
 import BlogDetail from "./pages/BlogDetails.tsx";
+import {PromoMarquee} from "./components/PromoMarquee.tsx";
+import { WhatsAppFloatingButton } from "./components/WhatsAppFloatingButton";
 
 function Layout() {
     const location = useLocation();
 
-    // Si la ruta comienza con "/admin", no mostrar Navbar
     const hideNavbar = location.pathname.startsWith('/admin');
+    const hideMarqueeRoutes = [
+        "/admin",
+        "/checkout",
+        "/finishtx",
+    ];
+    const hideMarquee = hideMarqueeRoutes.some((path) =>
+        location.pathname.startsWith(path)
+    );
+    const hideWhatsapp = location.pathname.startsWith("/admin");
+
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {!hideWhatsapp && <WhatsAppFloatingButton />}
+            {!hideMarquee && (
+                <PromoMarquee
+                    speed={22}
+                    items={[
+                        { text: "Domicilios gratis a todo Colombia ✈🎁"},
+                        { text: "Envios gratis para todas tus compras"},
+                        { text: "Domicilios gratis a todo Colombia ✈🎁"},
+                        { text: "Envios gratis para todas tus compras"},
+                    ]}
+                />
+            )}
             {!hideNavbar && <Navbar/>}
             <main>
                 <Routes>

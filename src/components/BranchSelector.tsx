@@ -51,7 +51,7 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({ branches }) => {
 
     return (
         <div className="text-center">
-            <h2 className="text-5xl font-avenir font-bold mb-6">Nuestras tiendas</h2>
+            <h2 className="text-4xl font-avenir font-bold mb-6">También lo puedes comprar en estas tiendas</h2>
 
             <div className="mb-8 flex flex-col items-center">
                 <label htmlFor="city-select" className="block text-sm font-avenir text-gray-700 mb-2">
