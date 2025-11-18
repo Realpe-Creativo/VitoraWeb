@@ -23,7 +23,7 @@ export const AlsoInterested: React.FC<AlsoInterestedProps> = ({
 
   return (
     <div className="mt-12">
-      <h2 className="text-3xl text-center font-dunkin mb-6">Tambien te podría interesar</h2>
+      <h2 className="text-5xl text-center font-avenir font-bold mb-6">Tambien te podría interesar</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {relatedProducts.map(product => (
           <ProductCard key={product.id} product={product} />

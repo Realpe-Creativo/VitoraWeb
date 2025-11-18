@@ -51,7 +51,7 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({ branches }) => {
 
     return (
         <div className="text-center">
-            <h2 className="text-3xl font-dunkin mb-6">Nuestras tiendas</h2>
+            <h2 className="text-5xl font-avenir font-bold mb-6">Nuestras tiendas</h2>
 
             <div className="mb-8 flex flex-col items-center">
                 <label htmlFor="city-select" className="block text-sm font-avenir text-gray-700 mb-2">
@@ -72,7 +72,7 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({ branches }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                 {filteredBranches.map(branch => (
                     <div key={branch.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow w-full max-w-sm">
-                        <h3 className="text-lg font-dunkin text-gray-900 mb-4">{branch.name}</h3>
+                        <h3 className="text-lg font-avenir font-bold text-gray-900 mb-4">{branch.name}</h3>
 
                         <div className="space-y-3">
                             <div className="flex items-start space-x-3">

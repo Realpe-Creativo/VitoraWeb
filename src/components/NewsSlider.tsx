@@ -18,7 +18,7 @@ export default function BlogSlider({posts, title = "Noticias y Anuncios"}: Props
 
     return (
         <section className="w-full flex flex-col items-center">
-            <h2 className="text-3xl font-dunkin mb-6">Visita nuestro blog</h2>
+            <h2 className="text-5xl font-avenir font-bold mb-6">Visita nuestro blog</h2>
 
             <div className="relative w-11/12 md:w-10/12 lg:w-9/12 mt-6">
                 {/* Flecha Izquierda */}

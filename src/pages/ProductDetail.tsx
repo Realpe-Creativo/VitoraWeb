@@ -164,7 +164,7 @@ export const ProductDetail: React.FC = () => {
 
                     {/* Product Info */}
                     <div>
-                        <h1 className="text-3xl font-dunkin text-gray-900 mb-4">{product.name}</h1>
+                        <h1 className="text-4xl font-avenir font-bold text-gray-900 mb-4">{product.name}</h1>
                         <Price
                             amount={finalPrice}
                             currency={product.currency}
@@ -199,7 +199,6 @@ export const ProductDetail: React.FC = () => {
                                         onQuantityChange={setQuantity}
                                     />
                                 </div>
-                                {/* ↑ En móvil no cambia; desde md: MUY angosto */}
                             </div>
 
                             {/* Comprar ahora */}

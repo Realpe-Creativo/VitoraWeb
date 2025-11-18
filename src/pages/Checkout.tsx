@@ -309,7 +309,7 @@ export const Checkout: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Order Summary */}
                     <div>
-                        <h2 className="text-2xl font-dunkin text-gray-900 mb-6">Resumen de tu compra</h2>
+                        <h2 className="text-3xl font-avenir font-bold text-gray-900 mb-6">Resumen de tu compra</h2>
                         <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
                             {isSingle ? (
                                 <div className="flex items-start space-x-4">
@@ -321,7 +321,7 @@ export const Checkout: React.FC = () => {
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-900">{product!.name}</h3>
                                         <p className="text-sm text-gray-600">
-                                            {selectedSku ? `SKU: ${selectedSku} • ` : ''}Cantidad: {quantity}
+                                            Cantidad: {quantity}
                                         </p>
                                     </div>
                                     <Price amount={singleUnitPrice} currency={product!.currency} className="font-semibold" />
@@ -362,7 +362,7 @@ export const Checkout: React.FC = () => {
 
                     {/* Checkout Form */}
                     <div>
-                        <h2 className="text-2xl font-dunkin text-gray-900 mb-6">Información de pago</h2>
+                        <h2 className="text-3xl font-avenir font-bold text-gray-900 mb-6">Información de pago</h2>
                         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>

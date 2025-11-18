@@ -73,7 +73,7 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
 
     return (
         <div className="relative mx-auto max-w-7xl">
-            <h2 className="text-3xl text-center font-dunkin mb-6">Nuestras recetas</h2>
+            <h2 className="text-5xl text-center font-avenir font-bold mb-6">Nuestras recetas</h2>
 
             <div className="relative overflow-hidden rounded-lg bg-gray-100">
                 <div

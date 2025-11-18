@@ -150,9 +150,9 @@ export const products: Product[] = [
         ],
         alsoInterestedIds: ['2', '3', '4'],
         shorts: [
-            'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
-            'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
-            'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
+            'https://www.youtube.com/shorts/6poO3oBeyEk',
+            'https://www.youtube.com/shorts/-Xny9GYwUwg',
+            'https://www.youtube.com/shorts/Jjw1ryUf940?si=o4dWsUnURJ7UoRhT',
             'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
             'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
             'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
