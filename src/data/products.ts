@@ -40,7 +40,7 @@ export const products: Product[] = [
         id: '1',
         name: 'Citrato de Magnesio Polvo x 250gr',
         short_name: 'Citrato de Magnesio',
-        price: 49000,
+        price: 49900,
         currency: 'COP',
         images: {
             main: '/img/products/citrato_1.png',
