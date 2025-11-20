@@ -154,9 +154,9 @@ export const products: Product[] = [
             'https://www.youtube.com/shorts/6poO3oBeyEk',
             'https://www.youtube.com/shorts/-Xny9GYwUwg',
             'https://youtube.com/shorts/jG_UTsVRx4g?si=Qw2yh2R9awAW1CpA',
-            'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
-            'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
-            'https://youtube.com/shorts/-Bj17T_mu0M?si=TXo4Txxn0k6OngO2',
+            'https://www.youtube.com/shorts/9oecOkWbTaw',
+            'https://www.youtube.com/shorts/5yCjapEJADY',
+            'https://www.youtube.com/shorts/2CUF-snwTmg',
         ]
     },
     {
