@@ -1,23 +1,21 @@
-import React, {useState, useEffect, useCallback} from 'react';
-import {ChevronLeft, ChevronRight} from 'lucide-react';
-import {HeroSlide} from '../types';
-import {useViewportAspectRatio} from '../hooks/useViewportAspectRatio';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { HeroSlide } from '../types';
 
 interface HeroSliderProps {
     slides: HeroSlide[];
 }
 
-export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
+export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
-    const aspectRatio = useViewportAspectRatio(); // Si lo usas en otro lado, lo dejamos
 
     const nextSlide = useCallback(() => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
+        setCurrentSlide(prev => (prev + 1) % slides.length);
     }, [slides.length]);
 
     const prevSlide = useCallback(() => {
-        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+        setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
     }, [slides.length]);
 
     const goToSlide = useCallback((index: number) => {
@@ -32,10 +30,12 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
     }, [nextSlide, isPaused, slides.length]);
 
     const handleSlideClick = (link: string) => {
+        if (!link) return;
+
         if (link.startsWith('#')) {
             const element = document.querySelector(link);
             if (element) {
-                element.scrollIntoView({behavior: 'smooth'});
+                element.scrollIntoView({ behavior: 'smooth' });
             }
         } else {
             const isExternalLink = /^https?:\/\//.test(link);
@@ -47,7 +47,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
 
     return (
         <div
-            className="relative w-full h-auto md:h-[70vh] overflow-hidden"
+            className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             role="region"
@@ -60,13 +60,12 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
                     <div
                         key={slide.id}
                         className={`
-                            ${isActive ? 'block' : 'hidden'}      /* móvil: solo activo */
-                            md:block                              /* desktop: todos existen */
-                            md:absolute md:inset-0
-                            md:transition-opacity md:duration-500
-                            md:cursor-pointer
-                            ${isActive ? 'md:opacity-100' : 'md:opacity-0'}
-                        `}
+              absolute inset-0
+              w-full h-full
+              transition-opacity duration-500
+              cursor-pointer
+              ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}
+            `}
                         onClick={() => handleSlideClick(slide.link)}
                         role="button"
                         tabIndex={isActive ? 0 : -1}
@@ -78,27 +77,19 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
                         }}
                         aria-label={`${slide.title}${slide.subtitle ? ` - ${slide.subtitle}` : ''}`}
                     >
-                        {/* AQUÍ EL CAMBIO IMPORTANTE */}
                         <picture>
-                            {/* Móvil: siempre usa la imagen mobile */}
                             <source
                                 media="(max-width: 767px)"
                                 srcSet={slide.images.mobile}
                             />
-                            {/* Escritorio: siempre usa la imagen desktop */}
                             <source
                                 media="(min-width: 768px)"
                                 srcSet={slide.images.desktop}
                             />
-                            {/* Fallback (por si acaso) */}
                             <img
                                 src={slide.images.desktop}
                                 alt={slide.title}
-                                className="
-                                    w-full
-                                    h-auto md:h-full
-                                    object-cover
-                                "
+                                className="w-full h-full object-cover"
                                 loading={index === 0 ? 'eager' : 'lazy'}
                                 decoding="async"
                             />
@@ -122,32 +113,40 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({slides}) => {
 
             {slides.length > 1 && (
                 <>
+                    {/* Flecha izquierda: detenemos propagación */}
                     <button
-                        onClick={prevSlide}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            prevSlide();
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black z-20"
                         aria-label="Previous slide"
                     >
-                        <ChevronLeft className="w-6 h-6"/>
+                        <ChevronLeft className="w-6 h-6" />
                     </button>
 
+                    {/* Flecha derecha: detenemos propagación */}
                     <button
-                        onClick={nextSlide}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            nextSlide();
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black z-20"
                         aria-label="Next slide"
                     >
-                        <ChevronRight className="w-6 h-6"/>
+                        <ChevronRight className="w-6 h-6" />
                     </button>
 
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
                         {slides.map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => goToSlide(index)}
                                 className={`
-                                    w-3 h-3 rounded-full transition-all duration-200 focus:outline-none
-                                    focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
-                                    ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'}
-                                `}
+                  w-3 h-3 rounded-full transition-all duration-200 focus:outline-none
+                  focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+                  ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'}
+                `}
                                 aria-label={`Go to slide ${index + 1}`}
                             />
                         ))}

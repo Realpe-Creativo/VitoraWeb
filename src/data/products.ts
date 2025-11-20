@@ -10,7 +10,7 @@ export const heroSlides: HeroSlide[] = [
         },
         title: '',
         subtitle: '',
-        link: '/product/1'
+        link: '#products'
     },
     {
         id: '2',
@@ -21,7 +21,7 @@ export const heroSlides: HeroSlide[] = [
         },
         title: '',
         subtitle: '',
-        link: '/product/1'
+        link: '#products'
     },
     {
         id: '3',
