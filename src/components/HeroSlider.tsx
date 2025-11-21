@@ -11,11 +11,11 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
     const [isPaused, setIsPaused] = useState(false);
 
     const nextSlide = useCallback(() => {
-        setCurrentSlide(prev => (prev + 1) % slides.length);
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, [slides.length]);
 
     const prevSlide = useCallback(() => {
-        setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     }, [slides.length]);
 
     const goToSlide = useCallback((index: number) => {
@@ -53,45 +53,28 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
             role="region"
             aria-label="Hero image carousel"
         >
-            {slides.map((slide, index) => {
-                const isActive = index === currentSlide;
-
-                return (
+            {/* CONTENEDOR DESLIZABLE */}
+            <div
+                className="flex h-full transition-transform duration-700 ease-in-out"
+                style={{
+                    transform: `translateX(-${currentSlide * 100}%)`,
+                    willChange: 'transform',
+                }}
+            >
+                {slides.map((slide) => (
                     <div
                         key={slide.id}
-                        className={`
-              absolute inset-0
-              w-full h-full
-              transition-opacity duration-500
-              cursor-pointer
-              ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}
-            `}
+                        className="w-full h-full flex-shrink-0 cursor-pointer relative"
                         onClick={() => handleSlideClick(slide.link)}
-                        role="button"
-                        tabIndex={isActive ? 0 : -1}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleSlideClick(slide.link);
-                            }
-                        }}
-                        aria-label={`${slide.title}${slide.subtitle ? ` - ${slide.subtitle}` : ''}`}
                     >
                         <picture>
-                            <source
-                                media="(max-width: 767px)"
-                                srcSet={slide.images.mobile}
-                            />
-                            <source
-                                media="(min-width: 768px)"
-                                srcSet={slide.images.desktop}
-                            />
+                            <source media="(max-width: 767px)" srcSet={slide.images.mobile} />
+                            <source media="(min-width: 768px)" srcSet={slide.images.desktop} />
                             <img
                                 src={slide.images.desktop}
                                 alt={slide.title}
-                                className="w-full h-full object-cover"
-                                loading={index === 0 ? 'eager' : 'lazy'}
-                                decoding="async"
+                                className="w-full h-full object-cover select-none"
+                                draggable={false}
                             />
                         </picture>
 
@@ -108,45 +91,45 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                             </div>
                         </div>
                     </div>
-                );
-            })}
+                ))}
+            </div>
 
+            {/* CONTROLES */}
             {slides.length > 1 && (
                 <>
-                    {/* Flecha izquierda: detenemos propagación */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             prevSlide();
                         }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black z-20"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 z-20"
                         aria-label="Previous slide"
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </button>
 
-                    {/* Flecha derecha: detenemos propagación */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             nextSlide();
                         }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black z-20"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition-all duration-200 z-20"
                         aria-label="Next slide"
                     >
                         <ChevronRight className="w-6 h-6" />
                     </button>
 
+                    {/* INDICADORES */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
                         {slides.map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => goToSlide(index)}
-                                className={`
-                  w-3 h-3 rounded-full transition-all duration-200 focus:outline-none
-                  focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
-                  ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'}
-                `}
+                                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                                    index === currentSlide
+                                        ? 'bg-white'
+                                        : 'bg-white bg-opacity-50'
+                                }`}
                                 aria-label={`Go to slide ${index + 1}`}
                             />
                         ))}
