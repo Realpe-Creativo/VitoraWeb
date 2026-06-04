@@ -2,19 +2,8 @@ import React, {useState } from 'react';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 
 interface ShortsCarouselProps {
-    shorts: string[]; // puede mezclar YouTube y TikTok URLs
+    shorts: string[];
 }
-
-type Provider = 'youtube' | 'tiktok' | 'other';
-
-const getProvider = (url: string): Provider => {
-    try {
-        const u = new URL(url);
-        if (/youtu\.be|youtube\.com/.test(u.hostname)) return 'youtube';
-        if (/tiktok\.com/.test(u.hostname)) return 'tiktok';
-    } catch { /* empty */ }
-    return 'other';
-};
 
 const getYouTubeId = (url: string) => {
     try {
@@ -47,30 +36,19 @@ const getYouTubeThumb = (url: string) => {
     return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
 };
 
-const getTikTokId = (url: string) => {
-    const m = url.match(/\/video\/(\d+)/);
-    return m ? m[1] : null;
-};
-
-// TikTok v2 embed (no API de pausa → solución es desmontar el iframe)
-const getTikTokEmbed = (url: string) => {
-    const id = getTikTokId(url);
-    return id ? `https://www.tiktok.com/embed/v2/${id}` : null;
-};
-
 export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [activeIndex, setActiveIndex] = useState<number | null>(null); // solo este renderiza iframe
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [itemsPerView, setItemsPerView] = useState(1);
 
     React.useEffect(() => {
         const updateItemsPerView = () => {
             if (window.innerWidth < 640) {
-                setItemsPerView(1); // móvil: 1 short
+                setItemsPerView(1);
             } else if (window.innerWidth < 1024) {
-                setItemsPerView(2); // tablet: 2 shorts
+                setItemsPerView(2);
             } else {
-                setItemsPerView(4); // desktop: 4 shorts
+                setItemsPerView(4);
             }
         };
 
@@ -80,7 +58,6 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
     }, []);
 
     const maxIndex = Math.max(shorts.length - itemsPerView, 0);
-
     const transform = `translateX(-${(currentIndex * 100) / itemsPerView}%)`;
 
     if (!shorts?.length) return null;
@@ -95,30 +72,20 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                     style={{ transform }}
                 >
                     {shorts.map((url, index) => {
-                        const provider = getProvider(url);
+                        const embedSrc = getYouTubeEmbed(url);
+                        const poster = getYouTubeThumb(url);
                         const isActive = index === activeIndex;
 
-                        // Embed URLs (solo se usan si isActive)
-                        const embedSrc =
-                            provider === 'youtube'
-                                ? getYouTubeEmbed(url)
-                                : provider === 'tiktok'
-                                    ? getTikTokEmbed(url)
-                                    : null;
-
-                        // Thumbnails (YouTube tiene fácil; TikTok no expone uno estable sin oEmbed → usamos placeholder)
-                        const poster =
-                            provider === 'youtube'
-                                ? getYouTubeThumb(url)
-                                : null;
-
                         return (
-                            <div key={index} className="w-full sm:w-1/2 lg:w-1/4 flex-shrink-0 px-2">
+                            <div
+                                key={index}
+                                style={{ width: `${100 / itemsPerView}%` }}
+                                className="flex-shrink-0 px-2"
+                            >
                                 <div className="relative aspect-[9/16] overflow-hidden rounded-lg bg-black/5">
                                     {isActive && embedSrc ? (
-                                        // Renderizamos SOLO el iframe activo → los otros se desmontan y se detienen
                                         <iframe
-                                            key={`active-${index}`} // fuerza remount al cambiar
+                                            key={`active-${index}`}
                                             src={embedSrc}
                                             className="w-full h-full"
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -126,7 +93,6 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                                             title={`Short ${index + 1}`}
                                         />
                                     ) : (
-                                        // Poster "silencioso". Al click → activamos este y desmontamos el anterior
                                         <button
                                             type="button"
                                             onClick={() => setActiveIndex(index)}
@@ -142,13 +108,10 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                                                      <span className="text-sm text-gray-600">
-                                                        {provider === 'tiktok' ? 'TikTok' : 'Short'}
-                                                      </span>
+                                                    <span className="text-sm text-gray-600">YouTube</span>
                                                 </div>
                                             )}
 
-                                            {/* overlay play */}
                                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             <div className="absolute inset-0 flex items-center justify-center">
                                                 <div className="rounded-full p-3 bg-white/90 shadow group-hover:scale-110 transition-transform">
@@ -157,11 +120,6 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                                             </div>
                                         </button>
                                     )}
-
-                                    {/* Marca del provider */}
-                                    <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-black/60 text-white">
-                                        {provider === 'youtube' ? 'YouTube' : provider === 'tiktok' ? 'TikTok' : 'Video'}
-                                    </div>
                                 </div>
                             </div>
                         );
@@ -174,11 +132,7 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                             onClick={() => {
                                 const newIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
                                 setCurrentIndex(newIndex);
-                                // si el activo quedó fuera de la vista, lo desactivamos para que no siga sonando
-                                if (
-                                    activeIndex !== null &&
-                                    (activeIndex < newIndex || activeIndex >= newIndex + itemsPerView)
-                                ) {
+                                if (activeIndex !== null && (activeIndex < newIndex || activeIndex >= newIndex + itemsPerView)) {
                                     setActiveIndex(null);
                                 }
                             }}
@@ -192,10 +146,7 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({ shorts }) => {
                             onClick={() => {
                                 const newIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
                                 setCurrentIndex(newIndex);
-                                if (
-                                    activeIndex !== null &&
-                                    (activeIndex < newIndex || activeIndex >= newIndex + itemsPerView)
-                                ) {
+                                if (activeIndex !== null && (activeIndex < newIndex || activeIndex >= newIndex + itemsPerView)) {
                                     setActiveIndex(null);
                                 }
                             }}

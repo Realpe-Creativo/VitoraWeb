@@ -1,17 +1,19 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {Link} from 'react-router-dom';
 import {Search, X, Instagram, MessageCircle, ShoppingCart, Trash2} from 'lucide-react';
-import {products} from '../data/products';
 import {Product} from '../types';
+import {getProductos} from '../services/productosService';
 
 type CartItem = {
     id: string;
     name: string;
-    price: number;       // precio unitario
+    price: number;
+    originalPrice?: number;
+    discount?: number;
     quantity: number;
     image?: string;
     sku?: string;
-    currency?: string;   // 'COP' por defecto
+    currency?: string;
 };
 
 const CURRENCY = 'COP';
@@ -40,20 +42,26 @@ export const Navbar: React.FC = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<Product[]>([]);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchModalRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        getProductos().then(setAllProducts).catch(console.error);
+    }, []);
+
+    useEffect(() => {
         if (searchQuery.trim()) {
-            const filtered = products.filter(product =>
-                product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.description.toLowerCase().includes(searchQuery.toLowerCase())
+            const q = searchQuery.toLowerCase();
+            const filtered = allProducts.filter(p =>
+                p.name.toLowerCase().includes(q) ||
+                p.description.toLowerCase().includes(q)
             );
             setSearchResults(filtered);
         } else {
             setSearchResults([]);
         }
-    }, [searchQuery]);
+    }, [searchQuery, allProducts]);
 
     useEffect(() => {
         if (isSearchOpen && searchInputRef.current) {
@@ -152,7 +160,7 @@ export const Navbar: React.FC = () => {
                             <div className="hidden md:flex items-center space-x-1">
 
                                 <a
-                                    href="https://instagram.com"
+                                    href="https://www.instagram.com/vitoracolombia/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="p-2 text-gray-600 hover:text-pink-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -172,7 +180,7 @@ export const Navbar: React.FC = () => {
                                 </a>
 
                                 <a
-                                    href="https://tiktok.com"
+                                    href="https://www.tiktok.com/@vitoracolombia"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -180,6 +188,18 @@ export const Navbar: React.FC = () => {
                                 >
                                     <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-.88-.05A6.33 6.33 0 0 0 5.16 20.5a6.33 6.33 0 0 0 10.86-4.43V7.83a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.26z"/>
+                                    </svg>
+                                </a>
+
+                                <a
+                                    href="https://www.facebook.com/profile.php?id=61576720066267"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    aria-label="Facebook"
+                                >
+                                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.884v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
                                     </svg>
                                 </a>
                             </div>
@@ -292,7 +312,14 @@ export const Navbar: React.FC = () => {
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-sm font-medium text-gray-900 truncate">{product.name}</h4>
                                                         <p className="text-sm text-gray-500 truncate">
-                                                            {product.category} • {formatMoney(product.price)}
+                                                            {product.category} •{' '}
+                                                            {product.discount > 0 ? (
+                                                                <>
+                                                                    <span className="line-through text-gray-400 mr-1">{formatMoney(product.price)}</span>
+                                                                    <span className="text-green-700 font-medium">{formatMoney(Math.round(product.price * (1 - product.discount / 100)))}</span>
+                                                                    <span className="ml-1 px-1 bg-red-500 text-white text-xs rounded">-{product.discount}%</span>
+                                                                </>
+                                                            ) : formatMoney(product.price)}
                                                         </p>
                                                     </div>
                                                 </Link>
@@ -347,7 +374,14 @@ export const Navbar: React.FC = () => {
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-gray-900 truncate">{item.name}</p>
                                                 <p className="text-sm text-gray-500">
-                                                    {item.sku ? `SKU: ${item.sku} • ` : ''}{formatMoney(item.price)}
+                                                    {item.sku ? `SKU: ${item.sku} • ` : ''}
+                                                    {item.originalPrice && item.discount ? (
+                                                        <>
+                                                            <span className="line-through text-gray-400 mr-1">{formatMoney(item.originalPrice)}</span>
+                                                            <span className="text-green-700 font-medium">{formatMoney(item.price)}</span>
+                                                            <span className="ml-1 px-1 bg-red-500 text-white text-xs rounded">-{item.discount}%</span>
+                                                        </>
+                                                    ) : formatMoney(item.price)}
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <button

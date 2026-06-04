@@ -11,6 +11,8 @@ interface CartItem {
     id: string;
     name: string;
     price: number;
+    originalPrice?: number;
+    discount?: number;
     currency: string;
     image: string;
     image_url: string;
@@ -23,6 +25,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
     const displayImage =
         isHovered && product.images.hover ? product.images.hover : product.images.main;
+
+    const effectivePrice = product.discount > 0
+        ? Math.round(product.price * (1 - product.discount / 100))
+        : product.price;
 
     // 🛒 Añadir producto al carrito
     const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -39,7 +45,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 cart.push({
                     id: product.id,
                     name: product.name,
-                    price: product.price,
+                    price: effectivePrice,
+                    ...(product.discount > 0 ? { originalPrice: product.price, discount: product.discount } : {}),
                     currency: product.currency,
                     image: product.images.main,
                     image_url: product.images.url_img,
@@ -85,7 +92,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 </Link>
 
                 <Price
-                    amount={product.price}
+                    amount={effectivePrice}
+                    originalAmount={product.discount > 0 ? product.price : undefined}
+                    discountPct={product.discount > 0 ? product.discount : undefined}
                     currency={product.currency}
                     className="text-3xl font-bold text-[#9acd65]"
                 />

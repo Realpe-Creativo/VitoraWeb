@@ -15,16 +15,16 @@ export const PromoMarquee: React.FC<PromoMarqueeProps> = ({
                                                               speed = 20,
                                                           }) => {
     return (
-        <div className="w-full overflow-hidden bg-[#9ACD65] text-black">
+        <div className="w-full overflow-hidden bg-[#9ACD65] text-black py-3">
             <div
-                className="flex whitespace-nowrap animate-marquee gap-10 px-10"
+                className="flex whitespace-nowrap animate-marquee gap-12 px-12"
                 style={{ animationDuration: `${speed}s` }}
             >
                 {/** Bloque original */}
                 {items.map((item, index) => (
                     <div
                         key={index}
-                        className="flex items-center gap-3 text-sm md:text-base"
+                        className="flex items-center gap-4 text-base md:text-lg font-semibold"
                     >
                         {item.href ? (
                             <a
@@ -47,7 +47,7 @@ export const PromoMarquee: React.FC<PromoMarqueeProps> = ({
                 {items.map((item, index) => (
                     <div
                         key={`dup-${index}`}
-                        className="flex items-center gap-3 text-sm md:text-base"
+                        className="flex items-center gap-4 text-base md:text-lg font-semibold"
                     >
                         {item.href ? (
                             <a

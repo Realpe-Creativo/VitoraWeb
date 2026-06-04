@@ -143,6 +143,18 @@ const Pedidos: React.FC = () => {
                 width: '140px',
             },
             {
+                header: 'Pago',
+                accessor: p => {
+                    const m = (p.metodo_pago || 'WOMPI').toUpperCase();
+                    return m === 'CONTRAENTREGA'
+                        ? <span className="px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 font-semibold">Contraentrega</span>
+                        : <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 font-semibold">En línea</span>;
+                },
+                align: 'center',
+                width: '130px',
+                disableSort: true,
+            },
+            {
                 header: 'Estado Pedido',
                 accessor: p => (
                     <select

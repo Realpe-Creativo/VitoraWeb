@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart } from 'lucide-react';
-import { products } from '../data/products';
+import { ArrowLeft, ShoppingCart, Play } from 'lucide-react';
 import { Product } from '../types';
+
+// ── Video helpers ────────────────────────────────────────────────────────────
+type MediaItem = { type: 'image'; src: string } | { type: 'video'; url: string };
+
+const ytId = (url: string): string | null => {
+    try {
+        const u = new URL(url);
+        if (u.hostname === 'youtu.be') return u.pathname.slice(1);
+        if (u.searchParams.get('v')) return u.searchParams.get('v');
+        const m = u.pathname.match(/\/(shorts|embed)\/([^/?#]+)/);
+        if (m) return m[2];
+    } catch { /* empty */ }
+    const m = url.match(/(?:v=|\/shorts\/|\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+    return m ? m[1] : null;
+};
+const isYouTube = (url: string) => /youtu\.be|youtube\.com/.test(url);
+const ytEmbed = (url: string) => {
+    const id = ytId(url);
+    return id ? `https://www.youtube.com/embed/${id}?rel=0&playsinline=1` : null;
+};
+const ytThumb = (url: string) => {
+    const id = ytId(url);
+    return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
+};
+import { getProductoById, getProductos } from '../services/productosService';
 import { ImageZoom } from '../components/ImageZoom';
 import { Price } from '../components/Price';
 import { QuantitySelector } from '../components/QuantitySelector';
-//import { VariantSelect } from '../components/VariantSelect';
-/*import { IconBenefitsRow } from '../components/IconBenefitsRow';*/
 import { AlsoInterested } from '../components/AlsoInterested';
 import { MiniBanner } from '../components/MiniBanner';
 import { ShortsCarousel } from '../components/ShortsCarousel';
@@ -17,6 +39,8 @@ type CartItem = {
     id: string;
     name: string;
     price: number;
+    originalPrice?: number;
+    discount?: number;
     currency: string;
     image: string;
     image_url: string;
@@ -41,26 +65,45 @@ const setCart = (items: CartItem[]) => {
 export const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [product, setProduct] = useState<Product | null>(null);
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
+    const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const [selectedVariant, setSelectedVariant] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [added, setAdded] = useState(false);
 
     useEffect(() => {
-        const foundProduct = products.find(p => p.id === id);
-        if (foundProduct) {
-            setProduct(foundProduct);
-            setSelectedVariant(foundProduct.variants[0]?.sku || '');
-        }
+        if (!id) return;
+        setLoading(true);
+        setNotFound(false);
+        setSelectedMediaIndex(0);
+
+        Promise.all([getProductoById(id), getProductos()])
+            .then(([prod, all]) => {
+                setProduct(prod);
+                setAllProducts(all);
+                setSelectedVariant(prod.variants[0]?.sku || '');
+            })
+            .catch(() => setNotFound(true))
+            .finally(() => setLoading(false));
     }, [id]);
 
-    if (!product) {
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-[#9acd65] border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    if (notFound || !product) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h2>
                     <Link to="/" className="text-blue-600 hover:text-blue-800">
-                        Return to home
+                        Volver a la tienda
                     </Link>
                 </div>
             </div>
@@ -79,12 +122,16 @@ export const ProductDetail: React.FC = () => {
     const handleAddToCart = () => {
         try {
             const cart = getCart();
-            const price = product.variants.find(v => v.sku === selectedVariant)?.price ?? product.price;
+            const variantBasePrice = product.variants.find(v => v.sku === selectedVariant)?.price ?? product.price;
+            const effectivePrice = product.discount > 0
+                ? Math.round(variantBasePrice * (1 - product.discount / 100))
+                : variantBasePrice;
             const key = (item: CartItem) => `${item.id}__${item.sku || ''}`;
             const incoming: CartItem = {
                 id: product.id,
                 name: product.name,
-                price,
+                price: effectivePrice,
+                ...(product.discount > 0 ? { originalPrice: variantBasePrice, discount: product.discount } : {}),
                 currency: product.currency,
                 image: product.images.main,
                 image_url: product.images.url_img,
@@ -107,12 +154,20 @@ export const ProductDetail: React.FC = () => {
         }
     };
 
+    const mediaItems: MediaItem[] = [
+        ...(product.images.gallery || []).map(src => ({ type: 'image' as const, src })),
+        ...(product.images.videos || []).map(url => ({ type: 'video' as const, url })),
+    ];
+    const selectedMedia = mediaItems[selectedMediaIndex] ?? { type: 'image' as const, src: product.images.main };
+
     const selectedVariantData = product.variants.find(v => v.sku === selectedVariant);
-    const finalPrice = selectedVariantData?.price || product.price;
+    const basePrice = selectedVariantData?.price || product.price;
+    const finalPrice = product.discount > 0
+        ? Math.round(basePrice * (1 - product.discount / 100))
+        : basePrice;
 
     return (
         <div className="bg-white">
-            {/* Breadcrumb */}
             <div className="bg-gray-50 border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <Link
@@ -126,38 +181,75 @@ export const ProductDetail: React.FC = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Product Details */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                    {/* Images */}
+                    {/* Media (imágenes + videos) */}
                     <div>
-                        <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
-                            <ImageZoom
-                                src={product.images.gallery[selectedImageIndex] || product.images.main}
-                                alt={product.name}
-                                className="w-full h-full"
-                            />
+                        {/* Visor principal */}
+                        <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-black">
+
+                            {selectedMedia.type === 'image' ? (
+                                <ImageZoom
+                                    src={selectedMedia.src}
+                                    alt={product.name}
+                                    className="w-full h-full"
+                                />
+                            ) : isYouTube(selectedMedia.url) ? (
+                                <iframe
+                                    src={ytEmbed(selectedMedia.url) || ''}
+                                    className="w-full h-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    title={`Video ${selectedMediaIndex + 1}`}
+                                />
+                            ) : (
+                                <video
+                                    src={selectedMedia.url}
+                                    controls
+                                    className="w-full h-full object-contain"
+                                />
+                            )}
                         </div>
 
-                        {product.images.gallery.length > 1 && (
+                        {/* Strip de miniaturas */}
+                        {mediaItems.length > 1 && (
                             <div className="grid grid-cols-4 gap-2">
-                                {product.images.gallery.map((image, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setSelectedImageIndex(index)}
-                                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                                            selectedImageIndex === index
-                                                ? 'border-[#9acd65] ring-2 ring-blue-200'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <img
-                                            src={image}
-                                            alt={`${product.name} view ${index + 1}`}
-                                            className="w-full h-full object-cover"
-                                            loading="lazy"
-                                        />
-                                    </button>
-                                ))}
+                                {mediaItems.map((item, index) => {
+                                    const isSelected = selectedMediaIndex === index;
+                                    const thumb = item.type === 'video'
+                                        ? (isYouTube(item.url) ? ytThumb(item.url) : null)
+                                        : null;
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => setSelectedMediaIndex(index)}
+                                            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                                isSelected ? 'border-[#9acd65] ring-2 ring-[#9acd65]/30' : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                        >
+                                            {item.type === 'image' ? (
+                                                <img
+                                                    src={item.src}
+                                                    alt={`${product.name} ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                    loading="lazy"
+                                                />
+                                            ) : thumb ? (
+                                                <>
+                                                    <img src={thumb} alt={`Video ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                                        <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                                            <Play className="w-4 h-4 text-gray-800 ml-0.5" />
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                                                    <Play className="w-6 h-6 text-white" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -167,23 +259,17 @@ export const ProductDetail: React.FC = () => {
                         <h1 className="text-4xl font-avenir font-bold text-gray-900 mb-4">{product.name}</h1>
                         <Price
                             amount={finalPrice}
+                            originalAmount={product.discount > 0 ? basePrice : undefined}
+                            discountPct={product.discount > 0 ? product.discount : undefined}
                             currency={product.currency}
                             className="text-3xl font-bold text-[#9acd65] mb-6"
                         />
 
                         <div className="space-y-6">
-                            {/*<VariantSelect
-                            variants={product.variants}
-                            selectedSku={selectedVariant}
-                            onVariantChange={setSelectedVariant}
-                            label="Select variant"
-                          />*/}
-
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Cantidad:
                                 </label>
-
                                 <div
                                     className="
                                     w-fit inline-block
@@ -201,7 +287,6 @@ export const ProductDetail: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Comprar ahora */}
                             <button
                                 onClick={handleBuyNow}
                                 className="w-full bg-[#9acd65] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#9acd65] transition-colors flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-[#9acd65] focus:ring-offset-2"
@@ -209,7 +294,6 @@ export const ProductDetail: React.FC = () => {
                                 <span>Comprar ahora</span>
                             </button>
 
-                            {/* ➕ Añadir al carrito (debajo del botón Comprar) */}
                             <button
                                 onClick={handleAddToCart}
                                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2
@@ -225,7 +309,6 @@ export const ProductDetail: React.FC = () => {
 
                         <div className="mt-8 space-y-6">
                             <div className="space-y-4">
-                                {/* Características / Descripción */}
                                 <AccordionSection title="Características" defaultOpen>
                                     <HtmlContent
                                         html={product.description}
@@ -233,10 +316,7 @@ export const ProductDetail: React.FC = () => {
                                     />
                                 </AccordionSection>
 
-                                {/* Beneficios */}
-                                {/* Beneficios */}
                                 {product.benefitsGroups && product.benefitsGroups.length > 0 ? (
-                                    // Modo: acordeón dentro de acordeón
                                     <AccordionSection title="Beneficios">
                                         <div className="space-y-2">
                                             {product.benefitsGroups.map((group, index) => (
@@ -261,7 +341,6 @@ export const ProductDetail: React.FC = () => {
                                         </div>
                                     </AccordionSection>
                                 ) : (
-                                    // Modo: lista simple (como estaba antes)
                                     product.benefits && product.benefits.length > 0 && (
                                         <AccordionSection title="Beneficios">
                                             <ul className="space-y-2">
@@ -279,7 +358,6 @@ export const ProductDetail: React.FC = () => {
                                     )
                                 )}
 
-                                {/* Preguntas frecuentes: acordeón dentro de acordeón */}
                                 {product.faqs && product.faqs.length > 0 && (
                                     <AccordionSection title="Preguntas frecuentes">
                                         <div className="space-y-2">
@@ -305,9 +383,6 @@ export const ProductDetail: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Product Features */}
-                {/*<IconBenefitsRow icons={product.icons} />*/}
-
                 {product.extraSections && product.extraSections.length > 0 && (
                     <div className="mt-10 border-t border-gray-200 pt-8">
                         <div className="max-w-3xl mx-auto space-y-4">
@@ -327,18 +402,16 @@ export const ProductDetail: React.FC = () => {
                     </div>
                 )}
 
-                {/* Video Reviews */}
                 {product.shorts && product.shorts.length > 0 && (
                     <div className="py-12 border-t border-gray-200">
                         <ShortsCarousel shorts={product.shorts} />
                     </div>
                 )}
 
-                {/* Related Products */}
                 <AlsoInterested
-                    products={products}
+                    products={allProducts}
                     currentProductId={product.id}
-                    allProducts={products}
+                    allProducts={allProducts}
                 />
             </div>
         </div>

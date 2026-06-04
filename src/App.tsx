@@ -7,6 +7,7 @@ import {Checkout} from './pages/Checkout';
 import {ThankYou} from "./pages/ThankYou.tsx";
 import Login from "./pages/Login.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminProductos from "./pages/AdminProductos.tsx";
 import Pedidos from "./pages/Pedidos.tsx";
 import Transacciones from "./pages/Transacciones.tsx";
 import BlogList from "./pages/BlogList.tsx";
@@ -53,6 +54,7 @@ function Layout() {
                     <Route path="/admin/login" element={<Login/>}/>
                     <Route path="/admin/home" element={<Admin/>}/>
                     <Route path="/admin/pedidos" element={<Pedidos/>}/>
+                    <Route path="/admin/productos" element={<AdminProductos/>}/>
                     <Route path="/admin/trasactions" element={<Transacciones/>}/>
                     <Route path="/news" element={<BlogList />} />
                     <Route path="/news/newsDetail/:id" element={<BlogDetail />} />

@@ -3,11 +3,13 @@ export interface Product {
   name: string;
   short_name: string;
   price: number;
+  discount: number;
   currency: 'USD' | 'EUR' | 'COP';
   images: {
     main: string;
     hover?: string;
     gallery: string[];
+    videos?: string[];
     miniBanner?: string;
     url_img: string;
   };

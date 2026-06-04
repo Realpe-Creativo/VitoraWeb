@@ -9,7 +9,8 @@ import {
     Bars3Icon,
     XMarkIcon,
     /*IdentificationIcon,*/
-    ArrowsRightLeftIcon
+    ArrowsRightLeftIcon,
+    ShoppingBagIcon
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -91,6 +92,14 @@ export default function Sidebar({
                 >
                     <ArrowsRightLeftIcon className="h-6 w-6"/>
                     {isOpen && <span>Transacciones</span>}
+                </a>
+
+                <a
+                    href="/admin/productos"
+                    className="flex items-center gap-3 text-gray-700 hover:text-gray-900"
+                >
+                    <ShoppingBagIcon className="h-6 w-6"/>
+                    {isOpen && <span>Productos</span>}
                 </a>
 
                 {/* <a

@@ -1,14 +1,17 @@
 import React, {useState, useEffect} from 'react';
 import {Link, useSearchParams} from 'react-router-dom';
-import {ArrowLeft} from 'lucide-react';
-import {products} from '../data/products';
+import {ArrowLeft, CreditCard, Truck} from 'lucide-react';
 import {Product, CheckoutData} from '../types';
+import {getProductoById} from '../services/productosService';
 import {Price} from '../components/Price';
-import {personal_data, terms_and_conditions} from '../data/legal'
+import {personal_data, terms_and_conditions} from '../data/legal';
+import {api} from '../services/api';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 const CREATE_TX_URL = import.meta.env.VITE_CREATE_TX_URL as string;
+
+type PaymentMethod = 'wompi' | 'cod';
 
 type CartItem = {
     id: string;
@@ -43,6 +46,7 @@ export const Checkout: React.FC = () => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('wompi');
 
     // ✅ NUEVO: estados de aceptación y modales
     const [acceptData, setAcceptData] = useState(false);
@@ -79,12 +83,13 @@ export const Checkout: React.FC = () => {
 
         if (productId) {
             // MODO UNITARIO
-            const foundProduct = products.find(p => p.id === productId);
-            if (foundProduct) {
-                setProduct(foundProduct);
-                setSelectedSku(sku || foundProduct.variants[0]?.sku || '');
-                setQuantity(Number.isFinite(qty) && qty > 0 ? qty : 1);
-            }
+            getProductoById(productId)
+                .then(foundProduct => {
+                    setProduct(foundProduct);
+                    setSelectedSku(sku || foundProduct.variants[0]?.sku || '');
+                    setQuantity(Number.isFinite(qty) && qty > 0 ? qty : 1);
+                })
+                .catch(console.error);
         } else {
             // MODO CARRITO
             const fromLS = getCartFromLS().filter(it => it.quantity > 0);
@@ -165,9 +170,12 @@ export const Checkout: React.FC = () => {
 
     // Totales según modo
     const isSingle = !!product;
-    const singleUnitPrice = isSingle
+    const singleBasePrice = isSingle
         ? (product!.variants.find(v => v.sku === selectedSku)?.price ?? product!.price ?? 0)
         : 0;
+    const singleUnitPrice = isSingle && product!.discount > 0
+        ? Math.round(singleBasePrice * (1 - product!.discount / 100))
+        : singleBasePrice;
     const singleTotal = isSingle ? singleUnitPrice * quantity : 0;
 
     const cartSubtotal = !isSingle
@@ -178,14 +186,13 @@ export const Checkout: React.FC = () => {
 
     const buildProductosPayload = () => {
         if (product) {
-            const unitPrice = product.variants.find(v => v.sku === selectedSku)?.price ?? product.price ?? 0;
             return [
                 {
                     id: product.id,
                     sku: selectedSku || null,
                     nombre: product.name,
                     cantidad: quantity,
-                    precio: unitPrice,
+                    precio: singleUnitPrice,
                     moneda: product.currency || 'COP',
                     imagen: product.images?.url_img || null
                 }
@@ -205,7 +212,6 @@ export const Checkout: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // ✅ NUEVO: bloqueo si no aceptó ambas
         if (!acceptData || !acceptTerms) {
             alert('Debes autorizar el tratamiento de datos y aceptar los términos y condiciones para continuar.');
             return;
@@ -216,6 +222,36 @@ export const Checkout: React.FC = () => {
             return;
         }
 
+        setIsSubmitting(true);
+
+        if (paymentMethod === 'cod') {
+            try {
+                const { data } = await api.post('/pedidos/contraentrega', {
+                    nombre: formData.name,
+                    apellido: formData.lastname,
+                    email: formData.email,
+                    telefono: formData.phone,
+                    documento: formData.document,
+                    tipo_documento: formData.typeDocument,
+                    departamento: formData.department,
+                    ciudad: formData.city,
+                    direccion_envio: formData.address,
+                    notas: formData.notes || null,
+                    productos: buildProductosPayload(),
+                    valor_total: orderTotal
+                });
+
+                localStorage.removeItem('cart');
+                setCartItems([]);
+                window.location.href = `/finishtx?cod=1&ref=${data.id_pedido}`;
+            } catch (err: any) {
+                alert(err?.response?.data?.message || 'Error creando el pedido. Intenta de nuevo.');
+                setIsSubmitting(false);
+            }
+            return;
+        }
+
+        // Flujo Wompi
         const body = {
             valor_de_pago: orderTotal,
             estado_inicial: 'EN PROCESO',
@@ -232,7 +268,6 @@ export const Checkout: React.FC = () => {
         };
 
         try {
-            setIsSubmitting(true);
             if (!CREATE_TX_URL) throw new Error('VITE_CREATE_TX_URL no está definido');
 
             const resp = await fetch(CREATE_TX_URL, {
@@ -244,11 +279,9 @@ export const Checkout: React.FC = () => {
             const data = await resp.json();
 
             if (!resp.ok) {
-                const msg = data?.message || 'No se pudo crear la transacción.';
-                throw new Error(msg);
+                throw new Error(data?.message || 'No se pudo crear la transacción.');
             }
 
-            // 🧹 AQUÍ: vaciar carrito cuando la transacción se creó bien
             localStorage.removeItem('cart');
             setCartItems([]);
 
@@ -292,7 +325,9 @@ export const Checkout: React.FC = () => {
             {isSubmitting && (
                 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
                     <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <p className="mt-4 text-white font-medium">Redirigiendo a pasarela…</p>
+                    <p className="mt-4 text-white font-medium">
+                        {paymentMethod === 'cod' ? 'Confirmando pedido…' : 'Redirigiendo a pasarela…'}
+                    </p>
                 </div>
             )}
 
@@ -328,7 +363,13 @@ export const Checkout: React.FC = () => {
                                             Cantidad: {quantity}
                                         </p>
                                     </div>
-                                    <Price amount={singleUnitPrice} currency={product!.currency} className="font-semibold" />
+                                    <Price
+                                        amount={singleUnitPrice}
+                                        originalAmount={product!.discount > 0 ? singleBasePrice : undefined}
+                                        discountPct={product!.discount > 0 ? product!.discount : undefined}
+                                        currency={product!.currency}
+                                        className="font-semibold"
+                                    />
                                 </div>
                             ) : (
                                 <>
@@ -345,7 +386,13 @@ export const Checkout: React.FC = () => {
                                                     {it.sku ? `SKU: ${it.sku} • ` : ''}Cantidad: {it.quantity}
                                                 </p>
                                             </div>
-                                            <Price amount={it.price} currency={it.currency || 'COP'} className="font-medium" />
+                                            <Price
+                                                amount={it.price}
+                                                originalAmount={(it as any).originalPrice}
+                                                discountPct={(it as any).discount}
+                                                currency={it.currency || 'COP'}
+                                                className="font-medium"
+                                            />
                                         </div>
                                     ))}
                                 </>
@@ -368,6 +415,45 @@ export const Checkout: React.FC = () => {
                     <div>
                         <h2 className="text-3xl font-avenir font-bold text-gray-900 mb-6">Información de pago</h2>
                         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6">
+
+                            {/* Selector de método de pago */}
+                            <div className="mb-6">
+                                <p className="text-sm font-medium text-gray-700 mb-3">Método de pago *</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('wompi')}
+                                        className={`flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-all ${
+                                            paymentMethod === 'wompi'
+                                                ? 'border-[#9acd65] bg-[#f6ffed]'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <CreditCard className={`w-5 h-5 mt-0.5 flex-shrink-0 ${paymentMethod === 'wompi' ? 'text-[#7fb448]' : 'text-gray-400'}`} />
+                                        <div>
+                                            <p className="font-semibold text-sm text-gray-900">Pago en línea</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">Tarjeta, PSE, Nequi y más</p>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('cod')}
+                                        className={`flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-all ${
+                                            paymentMethod === 'cod'
+                                                ? 'border-[#9acd65] bg-[#f6ffed]'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <Truck className={`w-5 h-5 mt-0.5 flex-shrink-0 ${paymentMethod === 'cod' ? 'text-[#7fb448]' : 'text-gray-400'}`} />
+                                        <div>
+                                            <p className="font-semibold text-sm text-gray-900">Contraentrega</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">Paga cuando recibas tu pedido. Disponible para todo el país.</p>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -580,10 +666,14 @@ export const Checkout: React.FC = () => {
 
                             <button
                                 type="submit"
-                                disabled={isSubmitting || !acceptData || !acceptTerms} // ✅ deshabilitado hasta aceptar ambas
-                                className="w-full bg-[#9acd65] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#9acd65] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[#9acd65] focus:ring-offset-2"
+                                disabled={isSubmitting || !acceptData || !acceptTerms}
+                                className="w-full bg-[#9acd65] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#8bc34a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[#9acd65] focus:ring-offset-2"
                             >
-                                {isSubmitting ? 'Procesando…' : 'Completar compra'}
+                                {isSubmitting
+                                    ? 'Procesando…'
+                                    : paymentMethod === 'cod'
+                                        ? 'Confirmar pedido'
+                                        : 'Ir a pagar'}
                             </button>
                         </form>
                     </div>

@@ -46,6 +46,7 @@ export type PedidoDTO = {
     departamento?: string | null;
     ciudad?: string | null;
     direccion_envio?: string | null;
+    metodo_pago?: string | null;
     notas?: string | null;
     creado_en: string;
     actualizado_en: string;
