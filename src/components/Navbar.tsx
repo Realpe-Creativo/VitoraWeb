@@ -128,6 +128,12 @@ export const Navbar: React.FC = () => {
         document.body.style.overflow = 'unset';
     };
 
+    useEffect(() => {
+        const handler = () => openCart();
+        window.addEventListener('openCart', handler);
+        return () => window.removeEventListener('openCart', handler);
+    }, []);
+
     const incQty = (id: string) => {
         const next = cart.map(it => it.id === id ? {...it, quantity: (it.quantity || 0) + 1} : it);
         setCart(next);
@@ -423,7 +429,7 @@ export const Navbar: React.FC = () => {
                                 <span className="text-gray-600">Subtotal</span>
                                 <span className="text-lg font-semibold">{formatMoney(cartSubtotal)}</span>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 mb-2">
                                 <button
                                     onClick={clearCart}
                                     disabled={cart.length === 0}
@@ -439,6 +445,12 @@ export const Navbar: React.FC = () => {
                                     Pagar
                                 </Link>
                             </div>
+                            <button
+                                onClick={closeCart}
+                                className="w-full text-center text-sm text-gray-500 hover:text-gray-800 py-1 transition-colors"
+                            >
+                                ← Seguir comprando
+                            </button>
                             <p className="mt-2 text-xs text-gray-500">
                                 En el checkout podrás calcular envío e impuestos (si aplican).
                             </p>

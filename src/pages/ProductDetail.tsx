@@ -149,6 +149,7 @@ export const ProductDetail: React.FC = () => {
             setCart(cart);
             setAdded(true);
             setTimeout(() => setAdded(false), 1500);
+            window.dispatchEvent(new Event('openCart'));
         } catch (e) {
             console.error('No se pudo añadir al carrito', e);
         }

@@ -60,8 +60,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             setAdded(true);
             setTimeout(() => setAdded(false), 1500);
 
-            // dispara un evento para que el Navbar actualice el contador
             window.dispatchEvent(new Event('storage'));
+            window.dispatchEvent(new Event('openCart'));
         } catch (err) {
             console.error('Error al agregar al carrito:', err);
         }
