@@ -347,7 +347,7 @@ export const Navbar: React.FC = () => {
 
                     {/* Panel */}
                     <aside
-                        className="absolute right-0 top-0 h-full w-full sm:w-[420px] bg-white shadow-xl flex flex-col"
+                        className="absolute right-0 left-[15%] sm:left-auto top-0 h-full sm:w-[420px] bg-white shadow-xl flex flex-col"
                         role="dialog"
                         aria-label="Carrito de compras"
                     >
